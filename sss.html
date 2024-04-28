@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Notifications for Farmers</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        async function getWeather() {
+            const apiKey = 'e29eab87a9d928bb5bbf92aec18e34c2';
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const weatherInfo = document.getElementById('weatherInfo');
+
+            try {
+                const response = await fetch('https://api.openweathermap.org/data/2.5/weather?q=Vellore&appid=' + apiKey + '&units=metric');
+                const data = await response.json();
+
+                const weatherDescription = data.weather[0].description;
+                const temperature = data.main.temp;
+
+                weatherInfo.textContent = `Weather: ${weatherDescription}, Temperature: ${temperature}°C`;
+
+                sendSMS(phoneNumber, `Weather: ${weatherDescription}, Temperature: ${temperature}°C`);
+            } catch (error) {
+                console.error("Error fetching weather data:", error);
+                weatherInfo.textContent = "Failed to fetch weather data.";
+            }
+        }
+
+        async function sendSMS(phoneNumber, message) {
+            const accountSid = 'ACf35238e9a40a1eeb6933967e8be2a15a';
+            const authToken = 'b6518c116ec9eca022bf30edd142fed4';
+            const twilioNumber = '+14847188134';
+
+            const url = 'https://api.twilio.com/2010-04-01/Accounts/' + accountSid + '/Messages.json';
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': 'Basic ' + btoa(accountSid + ':' + authToken)
+                    },
+                    body: 'To=' + encodeURIComponent(phoneNumber) + '&From=' + encodeURIComponent(twilioNumber) + '&Body=' + encodeURIComponent(message)
+                });
+                const responseData = await response.json();
+
+                if (responseData.error_message) {
+                    console.error("Error sending SMS:", responseData.error_message);
+                } else {
+                    console.log("SMS sent successfully.");
+                }
+            } catch (error) {
+                console.error("Error sending SMS:", error);
+            }
+        }
+    </script>
+    <style>
+        body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f0f0; 
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 500px;
+    margin: 50px auto;
+    background-color: #f5d0e0; /* Light pink */
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+h1 {
+    color: #333; 
+    margin-bottom: 20px;
+    font-size: 32px;
+}
+
+label {
+    display: block;
+    color: #666; 
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+input[type="text"] {
+    width: calc(100% - 30px);
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s ease-in-out;
+}
+
+input[type="text"]:focus {
+    border-color: #007BFF;
+    outline: none;
+}
+
+button {
+    padding: 15px 25px;
+    background-color: #add8e6; /* Light blue */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+
+button:hover {
+    background-color: #87ceeb; /* Darker shade of blue */
+}
+
+p {
+    font-size: 18px;
+    color: #333;
+    margin-top: 20px;
+}
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WEATHER UPDATES FOR FARMERS</h1>
+        <label for="phoneNumber">PLEASE ENTER UR PHONE NO. WITH COUNTRY CODE</label>
+        <input type="text" id="phoneNumber" placeholder="+1234567890">
+        <button onclick="getWeather()">Get Weather Update</button>
+        <p id="weatherInfo"></p>
+    </div>
+
+   </script>
+</body>
+</html>
